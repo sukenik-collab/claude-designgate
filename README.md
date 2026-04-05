@@ -53,6 +53,15 @@ cp templates/ux_decisions_template.md docs/ux_decisions.md
 This file grows over time as Claude resolves interaction decisions. After 2–3 screens,
 the audit shortens significantly — prior decisions are applied silently.
 
+### 4. Create your brand brief
+
+The brand brief is required before DesignGate can generate screens. You have two options:
+
+- **Let DesignGate build it interactively** — if no brief exists, it will ask you a
+  series of questions and save the result to `docs/brand_brief.md` automatically.
+- **Write it yourself** — use `templates/brand_brief_sample.md` as a reference for
+  what a complete brief looks like.
+
 ## How automatic triggering works
 
 DesignGate is designed to activate automatically when the CLAUDE.md snippet is
@@ -82,12 +91,31 @@ This means the audit shortens as the project matures. A well-specified project w
 ## Screen generation (external tooling)
 
 DesignGate is tool-agnostic. The skill outputs a complete, structured prompt — your
-screen generation layer produces the screens. Reference implementations:
+screen generation layer produces the screens.
 
-- **Google Stitch** — see `templates/stitch_generate.js` in your project's
-  `scripts/stitch/` directory
-- Bring your own tool: anything that takes a structured text prompt and returns
-  visual output
+**Default implementation: Google Stitch**
+
+A working Stitch integration is included in `templates/stitch/`:
+
+- `generate.js` — the generation script (list, generate, pull modes)
+- `package.json` — dependencies (`@google/stitch-sdk@0.0.3`, `dotenv`)
+
+To install it in your project:
+
+```
+mkdir -p scripts/stitch
+cp templates/stitch/generate.js scripts/stitch/generate.js
+cp templates/stitch/package.json scripts/stitch/package.json
+cd scripts/stitch && npm install
+```
+
+Add `STITCH_API_KEY=your-key` to your `.env`, then open `scripts/stitch/generate.js`
+and replace the `BRAND` constant and `SCREENS` object with your project's content.
+See `docs/stitch_workflow.md` for the full SDK reference and troubleshooting guide.
+
+**Bring your own tool:** anything that takes a structured text prompt and returns
+reviewable screens works. The DesignGate skill generates the prompt — your tool
+produces the output.
 
 ## The design contract
 

@@ -1,0 +1,14 @@
+{
+  "name": "designgate-stitch-scripts",
+  "version": "1.0.0",
+  "description": "Stitch UI generation scripts for DesignGate",
+  "type": "module",
+  "scripts": {
+    "generate": "node generate.js",
+    "list": "node generate.js --list"
+  },
+  "dependencies": {
+    "@google/stitch-sdk": "^0.0.3",
+    "dotenv": "^16.4.5"
+  }
+}
