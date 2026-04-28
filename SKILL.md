@@ -71,6 +71,56 @@ to proceed.
 
 ---
 
+## Step 1.5 — Capability Reconciliation (brownfield only)
+
+**Trigger:** The user provides a screen context bundle (see
+`templates/screen_context_bundle.md`). Skip entirely for greenfield screens.
+
+DesignGate does NOT verify API correctness, runtime reachability, or deprecation
+status. The caller's bundle is the authoritative and complete declaration of what
+currently exists. Code files are an optional diagnostic lens — they can clarify what
+a declared capability does when the description is ambiguous, but they cannot
+introduce capabilities not declared in the bundle.
+
+**Two-source model:**
+
+```
+Intent source:        spec    — what we want the system to be
+Reality declaration:  bundle  — what the caller says currently exists
+Code:                         — optional diagnostic lens only
+```
+
+**What to do, in order:**
+
+1. Read the spec section for the screen (intent source — what the system should be)
+2. Read the screen context bundle (reality declaration — caller's complete capability list)
+3. Compare: identify any User Capability in the bundle that is NOT addressed in the spec
+4. If code files are listed and a declared capability is ambiguous, read code to understand
+   what it does — not to discover new capabilities
+5. Produce the three-tier Capability Map
+
+**Three-tier Capability Map:**
+
+| Tier | Preservation rule |
+|------|-------------------|
+| User Capabilities | MUST appear in the new design |
+| System Behaviors | Context only — may change entirely |
+| Data Entities | Schema must preserve; interaction logic need not |
+
+The Capability Map is sourced exclusively from the bundle. Code files cannot add to it.
+Use `templates/capability_map_schema.md` as the output format.
+
+**Surface to the user before Step 2:**
+
+For each User Capability in the bundle that the spec does not mention:
+
+> "Your bundle includes [capability]. The spec doesn't address it. Should it carry
+> into the new design?"
+
+Resolve all of these before proceeding. Do not ask them as part of the Step 2 audit.
+
+---
+
 ## Step 2 — Interaction audit
 
 Read the spec section (or task description) for the screen(s) being built.
@@ -102,6 +152,13 @@ Example questions:
 - Which CTAs appear on mobile vs desktop?
 - Is [feature] visible to all users or gated by [condition]?
 
+**When a Capability Map is present (brownfield):** Questions ask HOW, never WHETHER.
+Capability existence was confirmed in Step 1.5 — the audit is about expression only.
+
+- Correct: "The screen must support [capability]. How should it be surfaced —
+  inline button, contextual menu, swipe action?"
+- Incorrect: "Should the new design support [capability]?"
+
 Wait for answers. Do not proceed until all questions are answered.
 
 ---
@@ -114,10 +171,18 @@ After the user answers the audit questions, write each resolved decision to
 Format:
 
 ```markdown
-| Decision | Resolution | First decided | Screen |
-|----------|-----------|---------------|--------|
-| [decision type, not screen-specific] | [what was decided] | [date] | [screen name] |
+| Decision | Resolution | Source | First decided | Screen |
+|----------|-----------|--------|---------------|--------|
+| [decision type, not screen-specific] | [what was decided] | [source] | [date] | [screen name] |
 ```
+
+Source values:
+- `Capability` — confirmed as required during Step 1.5 (not a design decision)
+- `Brief` — covered by brand brief, applied silently
+- `Decided` — answered during the interaction audit
+- `New` — first-time decision with no prior context
+
+Existing rows without a Source column are treated as `Decided`.
 
 Key the decision by type, not by screen — this is what enables future screens to
 match against it.
@@ -145,6 +210,19 @@ BRAND
 
 SCREEN: [name]
 AUTH CONTEXT: [who sees this, what state they are in]
+
+REQUIRED CAPABILITIES
+[Brownfield only — omit for greenfield screens.]
+[User capabilities that MUST be represented somewhere in this screen.]
+[Flat verb list — this is a completeness checklist, not an implementation description.]
+[HOW each is expressed is defined in the ACTIONS section below.]
+
+- [capability]
+- [capability]
+- [capability]
+
+[Role-scoped to: [user role from bundle]]
+[System behaviors excluded — design team context notes if needed.]
 
 LAYOUT
 [Describe the layout structure, responsive behavior, key zones]

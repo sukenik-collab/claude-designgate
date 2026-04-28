@@ -29,3 +29,10 @@ modal vs inline, mobile vs desktop CTA differences).
 Skip only when every interaction on the screen maps to an already-decided pattern
 in `docs/ux_decisions.md` or the brand brief, or when the task has no frontend
 component at all.
+
+**Brownfield redesigns (rebuilding an existing screen):** Fill out
+`templates/screen_context_bundle.md` and provide it before Step 3. Declare what user
+capabilities the current screen supports — DesignGate treats your declaration as
+authoritative and reconciles it against the spec (Step 1.5). Code files are an optional
+diagnostic lens only; they cannot introduce capabilities not declared in the bundle.
+UX patterns and interaction logic from existing code are never carried forward.
