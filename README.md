@@ -88,6 +88,72 @@ file and:
 This means the audit shortens as the project matures. A well-specified project with
 3–4 screens already built may see 0–2 questions per new screen.
 
+## Capability Reconciliation Mode (brownfield redesigns)
+
+When rebuilding an existing screen rather than designing a new one, use the screen
+context bundle to declare what the current screen does before the interaction audit begins.
+
+### The two-source model
+
+```
+Intent source:        spec    — what we want the system to be
+Reality declaration:  bundle  — what the caller says currently exists
+Code:                         — optional diagnostic lens only
+```
+
+The spec defines the desired system. The bundle is the caller's complete declaration of
+what currently exists. Code files can be provided as context to clarify what a declared
+capability does — they cannot introduce capabilities not declared in the bundle.
+
+DesignGate does not verify API correctness, runtime reachability, or deprecation status.
+Those judgments belong to the caller, declared explicitly in the bundle.
+
+### Three tiers of capability
+
+| Tier | Examples | Rule |
+|------|----------|------|
+| User Capabilities | upload_cv, delete_proof | MUST appear in new design |
+| System Behaviors | loading states, retry logic | Context only — may change entirely |
+| Data Entities | CV, Proof (schema) | Schema must preserve; interaction logic need not |
+
+Only User Capabilities are hard requirements. System Behaviors are context notes.
+Data Entities define the data model constraint, not the interaction shape.
+
+### What changes in the workflow
+
+- **Step 1.5 (Capability Reconciliation)** activates when a bundle is provided. It reads
+  the spec first, then the bundle, compares them, and produces a three-tier Capability Map.
+  Any User Capability declared in the bundle but absent from the spec is surfaced for
+  confirmation before the audit begins.
+- **Step 2 (interaction audit)** asks HOW, never WHETHER. Capability existence is
+  confirmed in Step 1.5 — the audit is about how each is expressed, not whether it exists.
+- **Step 3 (prompt generation)** includes a REQUIRED CAPABILITIES section — a flat verb
+  list that serves as a completeness checklist for the screen generation layer.
+
+### What does not change
+
+The greenfield workflow is unchanged. Step 1.5 is conditional — it only activates when a
+bundle is provided. The mandatory human approval gate (Step 5) applies in all cases.
+
+### Core principle
+
+> DesignGate uses the spec as the design authority and the caller-provided bundle as the
+> complete capability declaration. Code is an optional diagnostic lens — it can clarify
+> what a declared capability does, but it cannot introduce capabilities not declared in
+> the bundle. DesignGate does not verify backend implementation. Its job is to ask:
+> "does your spec cover everything you declared must exist?"
+
+### Setup
+
+```
+cp templates/screen_context_bundle.md [fill out for your screen]
+```
+
+Provide the filled bundle alongside your redesign request. See
+`templates/capability_map_schema.md` for the Capability Map output format.
+
+---
+
 ## Screen generation (external tooling)
 
 DesignGate is tool-agnostic. The skill outputs a complete, structured prompt — your
