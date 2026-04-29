@@ -149,8 +149,9 @@ bundle is provided. The mandatory human approval gate (Step 5) applies in all ca
 cp templates/screen_context_bundle.md [fill out for your screen]
 ```
 
-Provide the filled bundle alongside your redesign request. See
-`templates/capability_map_schema.md` for the Capability Map output format.
+Provide the filled bundle alongside your redesign request. The Capability Map format
+is defined inline in Step 1.5 of `SKILL.md` — `templates/capability_map_schema.md`
+is supplementary context only and is not required to be present.
 
 ---
 

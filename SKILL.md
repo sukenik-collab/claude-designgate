@@ -101,14 +101,46 @@ Code:                         — optional diagnostic lens only
 
 **Three-tier Capability Map:**
 
-| Tier | Preservation rule |
-|------|-------------------|
-| User Capabilities | MUST appear in the new design |
-| System Behaviors | Context only — may change entirely |
-| Data Entities | Schema must preserve; interaction logic need not |
-
 The Capability Map is sourced exclusively from the bundle. Code files cannot add to it.
-Use `templates/capability_map_schema.md` as the output format.
+Produce the map inline using the exact structure below — do not reference an external file.
+If `templates/capability_map_schema.md` exists it is supplementary context only.
+
+---
+
+**Capability Map — [Screen Name]**
+**User role:** [stated role from bundle]
+
+**USER CAPABILITIES — must appear in the new design**
+Enumerate one capability per line. Format: `verb + object | source (spec / bundle / both)`
+
+- [capability] | [source]
+- [capability] | [source]
+
+**SYSTEM BEHAVIORS — context only, may change entirely**
+| Behavior | Current value | Note |
+|----------|--------------|------|
+| [behavior] | [current implementation detail] | May change |
+
+**DATA ENTITIES — schema must preserve; interaction logic need not**
+For each entity declared in the bundle: enumerate every field with its type, nullable status,
+and any UI dependency. If a field is absent from the current schema but required by a declared
+User Capability, include it and mark it `MISSING — [prerequisite]`. Missing fields are as
+important as present ones — they surface UI dependencies that cannot be met yet.
+
+**[EntityName]**
+| Field | Type | Nullable | UI dependency |
+|-------|------|----------|---------------|
+| [field] | [type] | yes / no | [what UI element depends on this, or —] |
+| [field] | [type] | yes / no | MISSING — [what must exist before this capability works] |
+
+Repeat the entity block for each declared entity.
+
+**NOT CARRIED FORWARD**
+| Item | Reason |
+|------|--------|
+| [item] | [caller-excluded / non-user-facing / deprecated] |
+
+---
 
 **Surface to the user before Step 2:**
 

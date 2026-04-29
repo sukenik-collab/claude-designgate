@@ -51,11 +51,24 @@ declarations before asking any questions.
 
 ## Data entities
 
-<!-- Objects this screen operates on. Include relevant fields — not the full schema. -->
-<!-- Only fields that affect screen behavior or display. -->
-<!-- Example: -->
-<!-- CV: id, filename, status (pending / verified / rejected), uploaded_at -->
-<!-- Proof: id, type, status, cv_id -->
+<!-- Objects this screen operates on. For each entity, list fields that affect screen
+     behavior or display. Include type, whether the field is nullable, and what UI element
+     depends on it. If a field is required by a declared User Capability but not yet in
+     the schema, include it and mark it MISSING with its prerequisite. -->
+<!--
+     Example format:
+     CV
+     - id: UUID, not nullable
+     - filename: string, not nullable — displayed in upload row
+     - status: enum(pending, verified, rejected), not nullable — drives badge color
+     - export_format: enum(pdf, docx), nullable — MISSING: requires backend enum before export_cv works
+
+     Proof
+     - id: UUID, not nullable
+     - type: string, not nullable
+     - status: enum(pending, approved, rejected), not nullable — inline status indicator
+     - cv_id: UUID, not nullable — used to associate with parent CV
+-->
 
 ## Known intended UX changes
 
