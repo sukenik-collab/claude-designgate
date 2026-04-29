@@ -101,21 +101,64 @@ Code:                         — optional diagnostic lens only
 
 **Three-tier Capability Map:**
 
-| Tier | Preservation rule |
-|------|-------------------|
-| User Capabilities | MUST appear in the new design |
-| System Behaviors | Context only — may change entirely |
-| Data Entities | Schema must preserve; interaction logic need not |
-
 The Capability Map is sourced exclusively from the bundle. Code files cannot add to it.
-Use `templates/capability_map_schema.md` as the output format.
+Produce the map inline using the exact structure below — do not reference an external file.
+If `templates/capability_map_schema.md` exists it is supplementary context only.
+
+---
+
+**Capability Map — [Screen Name]**
+**User role:** [stated role from bundle]
+
+**USER CAPABILITIES — must appear in the new design**
+Enumerate one capability per line. Format: `verb + object | source (spec / bundle / both)`
+
+- [capability] | [source]
+- [capability] | [source]
+
+**SYSTEM BEHAVIORS — context only, may change entirely**
+| Behavior | Current value | Note |
+|----------|--------------|------|
+| [behavior] | [current implementation detail] | May change |
+
+**DATA ENTITIES — schema must preserve; interaction logic need not**
+For each entity declared in the bundle: enumerate every field with its type, nullable status,
+and any UI dependency. If a field is absent from the current schema but required by a declared
+User Capability, include it and mark it `MISSING — [prerequisite]`. Missing fields are as
+important as present ones — they surface UI dependencies that cannot be met yet.
+
+**[EntityName]**
+| Field | Type | Nullable | UI dependency |
+|-------|------|----------|---------------|
+| [field] | [type] | yes / no | [what UI element depends on this, or —] |
+| [field] | [type] | yes / no | MISSING — [what must exist before this capability works] |
+
+Repeat the entity block for each declared entity.
+
+**NOT CARRIED FORWARD**
+| Item | Reason |
+|------|--------|
+| [item] | [caller-excluded / non-user-facing / deprecated] |
+
+---
 
 **Surface to the user before Step 2:**
 
-For each User Capability in the bundle that the spec does not mention:
+**Check 1 — Spec coverage:** For each User Capability in the bundle that the spec does not mention:
 
 > "Your bundle includes [capability]. The spec doesn't address it. Should it carry
 > into the new design?"
+
+**Check 2 — MISSING prerequisites:** For each User Capability whose Data Entities contain
+one or more `MISSING` fields:
+
+> "[capability] is declared but depends on [field] ([prerequisite]) which is not yet in the
+> current schema. Do you want to design for it now as a disabled or placeholder state, or
+> exclude it from this redesign until the prerequisite is in place?"
+
+If the user confirms "design as placeholder," treat the capability as confirmed and carry it
+into Step 2 — mark it as a placeholder capability. It will be flagged in the Step 3 prompt.
+If the user excludes it, move it to the NOT CARRIED FORWARD section of the Capability Map.
 
 Resolve all of these before proceeding. Do not ask them as part of the Step 2 audit.
 
@@ -158,6 +201,14 @@ Capability existence was confirmed in Step 1.5 — the audit is about expression
 - Correct: "The screen must support [capability]. How should it be surfaced —
   inline button, contextual menu, swipe action?"
 - Incorrect: "Should the new design support [capability]?"
+
+**Exception — placeholder capabilities:** If a capability was confirmed in Step 1.5 as
+"design as placeholder" (it has MISSING prerequisites), the HOW question shifts from
+expression to unavailability:
+
+- "The screen must represent [capability], but [prerequisite] is not yet in the schema.
+  How should its unavailability be expressed — disabled button, hidden entirely, 'coming
+  soon' label, or locked state with an explanation?"
 
 Wait for answers. Do not proceed until all questions are answered.
 
@@ -216,10 +267,11 @@ REQUIRED CAPABILITIES
 [User capabilities that MUST be represented somewhere in this screen.]
 [Flat verb list — this is a completeness checklist, not an implementation description.]
 [HOW each is expressed is defined in the ACTIONS section below.]
+[PLACEHOLDER capabilities have unmet schema prerequisites — design the unavailable state only, do not implement.]
 
 - [capability]
 - [capability]
-- [capability]
+- [capability] [PLACEHOLDER — [prerequisite] not yet in schema]
 
 [Role-scoped to: [user role from bundle]]
 [System behaviors excluded — design team context notes if needed.]

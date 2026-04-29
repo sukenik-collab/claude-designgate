@@ -30,10 +30,10 @@ HOW each is expressed is decided in the Step 2 audit.
 Sourced from caller declaration in the screen context bundle. This list is closed —
 code files cannot add to it.
 
-| Capability | Note |
-|------------|------|
-| [verb phrase] | — |
-| [verb phrase] | — |
+- [verb phrase] | spec
+- [verb phrase] | bundle
+- [verb phrase] | both
+- [verb phrase] | bundle [PLACEHOLDER — [prerequisite] not yet in schema]
 
 ---
 
@@ -52,9 +52,19 @@ Listed here so the design team is aware of current behavior if relevant.
 
 Schema must be preserved. Interaction logic need not be.
 
-| Entity | Relevant fields |
-|--------|----------------|
-| [name] | [field, field, field] |
+For each entity: enumerate every field with its type, nullable status, and UI dependency.
+If a field is absent from the current schema but required by a declared User Capability,
+include it and mark it `MISSING — [prerequisite]`. Missing fields are as important as
+present ones — they surface UI dependencies that cannot be met yet.
+
+**[EntityName]**
+| Field | Type | Nullable | UI dependency |
+|-------|------|----------|---------------|
+| id | UUID | no | — |
+| [field] | [type] | yes / no | [UI element that depends on this, or —] |
+| [field] | [type] | yes / no | MISSING — [what must exist before the dependent capability works] |
+
+<!-- Repeat entity block for each declared entity. -->
 
 ---
 
