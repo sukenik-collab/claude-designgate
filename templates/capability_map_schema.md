@@ -30,10 +30,10 @@ HOW each is expressed is decided in the Step 2 audit.
 Sourced from caller declaration in the screen context bundle. This list is closed —
 code files cannot add to it.
 
-| Capability | Note |
-|------------|------|
-| [verb phrase] | — |
-| [verb phrase] | — |
+- [verb phrase] | spec
+- [verb phrase] | bundle
+- [verb phrase] | both
+- [verb phrase] | bundle [PLACEHOLDER — [prerequisite] not yet in schema]
 
 ---
 
