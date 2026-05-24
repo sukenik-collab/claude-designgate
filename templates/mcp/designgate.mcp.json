@@ -1,8 +1,11 @@
 {
   "mcpServers": {
     "stitch": {
-      "command": "npx",
-      "args": ["@_davideast/stitch-mcp", "proxy"]
+      "type": "http",
+      "url": "https://stitch.googleapis.com/mcp",
+      "headers": {
+        "X-Goog-Api-Key": "${STITCH_API_KEY}"
+      }
     }
   }
 }

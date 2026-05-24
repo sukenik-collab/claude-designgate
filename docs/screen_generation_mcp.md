@@ -32,13 +32,9 @@ check for the result before presenting it.
 ## Default provider: Google Stitch
 
 Stitch (Google, powered by Gemini) turns a text prompt into UI designs plus HTML/CSS. It
-ships an **official MCP server** — a remote HTTP endpoint at `https://stitch.googleapis.com/mcp`
-(authenticated with the `X-Goog-Api-Key` header) — plus an official proxy CLI,
-[`@_davideast/stitch-mcp`](https://github.com/davideast/stitch-mcp), that runs it locally
-over stdio and handles auth for you. Official setup docs:
-<https://stitch.withgoogle.com/docs/mcp/setup/>.
-
-The proxy is the recommended path for Claude Code.
+ships an **official MCP server**: a remote HTTP endpoint at `https://stitch.googleapis.com/mcp`,
+authenticated with the `X-Goog-Api-Key` header. Get the exact command for your client from
+Stitch's "Set up MCP" flow; official docs: <https://stitch.withgoogle.com/docs/mcp/setup/>.
 
 ### How Stitch's tools map to the contract
 
@@ -49,41 +45,46 @@ The proxy is the recommended path for Claude Code.
 | EXPORT | `get_screen_code` (screen HTML), `build_site` (full site from screens → routes) |
 
 `build_site`, `get_screen_code`, and `get_screen_image` are the documented higher-level
-tools. The proxy also surfaces the upstream Stitch API operations (generation, listing),
-which Claude discovers at runtime — so the exact generation tool name doesn't need to be
-known in advance.
+tools. The server also exposes the upstream Stitch generation and listing operations, which
+Claude discovers at runtime — so the exact generation tool name doesn't need to be known in
+advance.
 
 ### Setup
 
-1. **Register the server with Claude Code.** Copy `templates/mcp/designgate.mcp.json` to
-   `.mcp.json` at your project root:
+1. **Register the server with Claude Code.** Use the command Stitch's "Set up MCP" flow
+   gives you for Claude Code (remote HTTP transport):
+
+   ```bash
+   claude mcp add stitch \
+     --transport http \
+     --header "X-Goog-Api-Key: YOUR_KEY" \
+     https://stitch.googleapis.com/mcp
+   ```
+
+   Equivalent `.mcp.json` (this is what `templates/mcp/designgate.mcp.json` contains — copy
+   it to your project root and set `STITCH_API_KEY`):
 
    ```json
    {
      "mcpServers": {
        "stitch": {
-         "command": "npx",
-         "args": ["@_davideast/stitch-mcp", "proxy"]
+         "type": "http",
+         "url": "https://stitch.googleapis.com/mcp",
+         "headers": { "X-Goog-Api-Key": "${STITCH_API_KEY}" }
        }
      }
    }
    ```
 
-2. **Authenticate** with one of:
-   - **API key (simplest):** `export STITCH_API_KEY="your-key"` in the environment Claude
-     Code runs in.
-   - **OAuth (guided):** `npx @_davideast/stitch-mcp init` — runs a wizard that handles
-     gcloud, OAuth, credentials, and project setup.
-   - **System gcloud:** `gcloud auth application-default login` then
-     `gcloud config set project <PROJECT_ID>`, and add `"env": { "STITCH_USE_SYSTEM_GCLOUD": "1" }`
-     to the config block above.
-
-3. **Confirm.** Start Claude Code and check that `mcp__stitch__*` tools are listed. The
+2. **Confirm.** Start Claude Code and check that `mcp__stitch__*` tools are listed. The
    skill discovers and uses them automatically.
 
-> **Remote (no local proxy):** if your client supports remote MCP servers, point it at
-> `https://stitch.googleapis.com/mcp` with header `X-Goog-Api-Key: <your-key>` instead of
-> running the proxy CLI.
+> **Alternative — local proxy:** Stitch also ships a proxy CLI,
+> [`@_davideast/stitch-mcp`](https://github.com/davideast/stitch-mcp), that runs the server
+> locally over stdio and can handle OAuth/gcloud auth for you
+> (`{ "command": "npx", "args": ["@_davideast/stitch-mcp", "proxy"] }`, then `npx
+> @_davideast/stitch-mcp init` for guided OAuth). Use it if you'd rather not manage an API
+> key directly.
 
 ---
 
@@ -119,9 +120,10 @@ Claude holds the screen references in the conversation; there is no manifest fil
 
 ## Troubleshooting
 
-- **`mcp__stitch__*` tools don't appear:** the proxy failed to start. Check that `npx` can
-  reach `@_davideast/stitch-mcp` (network/registry access), and that authentication succeeded
-  (`STITCH_API_KEY` set, or `init` completed).
+- **`mcp__stitch__*` tools don't appear:** the server didn't connect. Confirm the
+  `X-Goog-Api-Key` header carries a valid key and that the client can reach
+  `https://stitch.googleapis.com/mcp`. (On the local-proxy path, check `npx` can reach
+  `@_davideast/stitch-mcp` and that `init` completed.)
 - **Auth errors on GENERATE:** the key is missing or lacks Stitch access. Verify
   `STITCH_API_KEY` is exported in the environment Claude Code runs in.
 - **GENERATE returns a job/ID but no image:** the server is async — Claude should poll a
