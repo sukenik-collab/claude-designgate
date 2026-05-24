@@ -62,6 +62,23 @@ The brand brief is required before DesignGate can generate screens. You have two
 - **Write it yourself** — use `templates/brand_brief_sample.md` as a reference for
   what a complete brief looks like.
 
+### 5. Configure a screen generation provider (required to generate screens)
+
+DesignGate generates screens by calling a **design MCP server** — Claude invokes its tools
+directly during the workflow. You must configure one before Step 4 of the workflow can run.
+
+Quick start with the default (Google Stitch):
+
+```
+cp templates/mcp/designgate.mcp.json .mcp.json
+export STITCH_API_KEY="your-key"      # or: npx @_davideast/stitch-mcp init  (guided OAuth)
+```
+
+Then start Claude Code and confirm `mcp__stitch__*` tools are listed. To use a different
+provider, register its MCP server in `.mcp.json` instead — any server that can generate,
+preview, and export screens works. See **`docs/screen_generation_mcp.md`** for full setup,
+the provider contract, and troubleshooting.
+
 ## How automatic triggering works
 
 DesignGate is designed to activate automatically when the CLAUDE.md snippet is
