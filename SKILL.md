@@ -303,14 +303,40 @@ modification. Do not write a summary prompt and expect the screen generation lay
 
 ---
 
-## Step 4 — Generate screens
+## Step 4 — Generate screens (via the design MCP server)
 
-Pass the prompt to the screen generation layer (Stitch, or the tool configured for the project).
+Generation happens by calling the configured **design MCP server's tools directly** — there
+is no script to run. DesignGate is provider-agnostic; Google Stitch is the shipped default.
+Setup and the full provider contract are in `docs/screen_generation_mcp.md`.
 
-If using `scripts/stitch/generate.js`:
-```
-node scripts/stitch/generate.js --prompt "[screen generation prompt]"
-```
+**Find the tools.** The configured server's tools appear as `mcp__<server>__<tool>`. Do not
+rely on hardcoded names — map the available tools to three capabilities:
+
+- **GENERATE** — turns this prompt into screens. *(Stitch: its screen-generation tool,
+  e.g. `generate_screen_from_text`.)*
+- **PREVIEW** — returns a viewable reference (image / screen ID) for review.
+  *(Stitch: `get_screen_image`, plus list/get-screen tools.)*
+- **EXPORT** — returns the approved screen as HTML/CSS or component code.
+  *(Stitch: `get_screen_code`, `build_site`.)*
+
+If no `mcp__*` design tools are available, stop and tell the user the design MCP server
+isn't configured, pointing them to `docs/screen_generation_mcp.md`. (A deprecated offline
+fallback exists at `templates/stitch/generate.js` for environments that can't run MCP.)
+
+**Run the loop — this is the human-UX-designer iteration, not a one-shot:**
+
+1. Call a GENERATE tool with the Step 3 prompt. Request 2 variants.
+2. If the server is async (returns a job/ID rather than a finished screen), call a PREVIEW
+   tool until the screen is ready.
+3. Present the preview reference(s) to the user and invite feedback.
+4. Fold their feedback into a revised prompt and call GENERATE again (use the server's
+   edit/variant tool for targeted changes when one exists). Repeat until they approve.
+
+For a multi-screen project, carry the design system forward between screens where the server
+supports it (Stitch exposes design-context extract/apply tools) so screens stay visually
+consistent.
+
+Hold screen references in the conversation. There is no manifest file to maintain.
 
 ---
 
@@ -319,12 +345,12 @@ node scripts/stitch/generate.js --prompt "[screen generation prompt]"
 **STOP.** Do not proceed to implementation.
 
 Present:
-> "Screens are ready for review. Open [tool URL/reference] and review the generated
-> screens. When you've approved one, give me the screen ID (or reference) and I'll
-> proceed with implementation."
+> "Screens are ready for review — [preview reference(s)]. Review them and tell me which to
+> use. When you've approved one, give me the screen ID (or reference) and I'll proceed with
+> implementation."
 
-Wait for explicit approval. A screen ID, URL reference, or clear "approved" is
-required. Do not interpret silence or vague responses as approval.
+Wait for explicit approval. A screen ID, reference, or clear "approved" is required. Do not
+interpret silence or vague responses as approval.
 
 ---
 
@@ -333,8 +359,9 @@ required. Do not interpret silence or vague responses as approval.
 Confirm approval:
 > "Design locked: [screen reference]. Implementing from this screen only."
 
-Build from the approved screen. Pull the HTML/CSS if using Stitch. Convert to the
-project's component format (React + Tailwind, or as configured).
+Pull the approved screen with an EXPORT tool (Stitch: `get_screen_code` for HTML/CSS, or
+`build_site`). Convert to the project's component format (React + Tailwind, or as
+configured) and build from that output.
 
 The approved screen is the design contract. Do not redesign during implementation.
 

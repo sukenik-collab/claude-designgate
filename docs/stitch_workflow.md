@@ -1,7 +1,11 @@
-# Stitch Integration — Technical Reference
+# Stitch Integration — Technical Reference (legacy / deprecated)
 
-> Reference for using Google Stitch with DesignGate. Read before touching
-> `scripts/stitch/generate.js` or running generation for the first time.
+> **Deprecated.** DesignGate now generates screens through a design MCP server — see
+> `docs/screen_generation_mcp.md`. This SDK-based script is retained only as an offline
+> fallback for environments that can't run an MCP server.
+
+> Reference for the legacy Google Stitch SDK script. Read before touching
+> `scripts/stitch/generate.js` or running the fallback generator.
 
 ---
 

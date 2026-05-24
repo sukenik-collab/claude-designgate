@@ -19,8 +19,11 @@ Before building any feature with significant frontend UI:
    list (maximum 5 questions). Wait for answers.
 4. Write resolved decisions to `docs/ux_decisions.md`.
 5. Use the answers + brand brief to generate a complete visual generation prompt.
-6. Generate screens. Stop and wait for explicit approval before building anything.
-7. Build from the approved screen only. The approved design is the contract.
+6. Generate screens by calling the configured design MCP server's tools (Google Stitch by
+   default — see `docs/screen_generation_mcp.md`). Iterate on the user's feedback, then stop
+   and wait for explicit approval before building anything.
+7. Build from the approved screen only — export it from the design server and implement that
+   output. The approved design is the contract.
 
 **Do not build UI directly from the spec.** This workflow is mandatory for any screen
 where the spec leaves interaction decisions open (layout, panel vs page, empty states,
