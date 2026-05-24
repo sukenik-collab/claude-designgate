@@ -1,5 +1,9 @@
 /**
- * DesignGate — Stitch UI Generation Script
+ * DesignGate — Stitch UI Generation Script (LEGACY / DEPRECATED)
+ *
+ * Deprecated: DesignGate now generates screens via a design MCP server
+ * (see docs/screen_generation_mcp.md). This SDK script is kept only as an
+ * offline fallback for environments that can't run an MCP server.
  *
  * Generates UI screen designs via the Google Stitch SDK. Outputs a manifest
  * of screen IDs and preview image URLs for human review before screens are

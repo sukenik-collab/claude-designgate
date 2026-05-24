@@ -155,34 +155,34 @@ is supplementary context only and is not required to be present.
 
 ---
 
-## Screen generation (external tooling)
+## Screen generation (via MCP)
 
-DesignGate is tool-agnostic. The skill outputs a complete, structured prompt — your
-screen generation layer produces the screens.
+DesignGate is tool-agnostic. The skill outputs a complete, structured prompt; a **design
+MCP server** turns it into reviewable screens. Claude calls the server's tools directly
+during the workflow — there is no script to run or API client to maintain in your project.
+
+The skill defines a small **provider contract** — the configured server must offer tools to
+GENERATE a screen from a prompt, PREVIEW the result, and EXPORT it as HTML/code. Claude
+discovers whatever tools the configured server exposes and maps them at runtime, so no tool
+names are hardcoded.
 
 **Default implementation: Google Stitch**
 
-A working Stitch integration is included in `templates/stitch/`:
+1. Build the Stitch MCP server (e.g. [`oogleyskr/stitch-mcp-server`](https://github.com/oogleyskr/stitch-mcp-server)):
+   `git clone … && npm install && npm run build`.
+2. Copy `templates/mcp/designgate.mcp.json` to `.mcp.json` at your project root and set the
+   absolute path to the built server and your `STITCH_API_KEY`.
+3. Start Claude Code and confirm `mcp__stitch__*` tools are listed.
 
-- `generate.js` — the generation script (list, generate, pull modes)
-- `package.json` — dependencies (`@google/stitch-sdk@0.0.3`, `dotenv`)
+Full setup, the tool→capability mapping, the iteration loop, and troubleshooting are in
+**`docs/screen_generation_mcp.md`**.
 
-To install it in your project:
+**Bring your own tool:** register any design MCP server in `.mcp.json` under any name; as
+long as it covers GENERATE / PREVIEW / EXPORT, the skill uses it with no edits.
 
-```
-mkdir -p scripts/stitch
-cp templates/stitch/generate.js scripts/stitch/generate.js
-cp templates/stitch/package.json scripts/stitch/package.json
-cd scripts/stitch && npm install
-```
-
-Add `STITCH_API_KEY=your-key` to your `.env`, then open `scripts/stitch/generate.js`
-and replace the `BRAND` constant and `SCREENS` object with your project's content.
-See `docs/stitch_workflow.md` for the full SDK reference and troubleshooting guide.
-
-**Bring your own tool:** anything that takes a structured text prompt and returns
-reviewable screens works. The DesignGate skill generates the prompt — your tool
-produces the output.
+**Legacy fallback (deprecated):** the pre-MCP Node SDK script remains at
+`templates/stitch/generate.js` (with `docs/stitch_workflow.md`) for environments that can't
+run an MCP server. The MCP path above is the supported route.
 
 ## The design contract
 
