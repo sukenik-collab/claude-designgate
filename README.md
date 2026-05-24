@@ -65,19 +65,24 @@ The brand brief is required before DesignGate can generate screens. You have two
 ### 5. Configure a screen generation provider (required to generate screens)
 
 DesignGate generates screens by calling a **design MCP server** — Claude invokes its tools
-directly during the workflow. You must configure one before Step 4 of the workflow can run.
+directly during the workflow. Configure one before Step 4 of the workflow can run.
 
-Quick start with the default (Google Stitch):
+Default is Google Stitch. Use the command Stitch's "Set up MCP" flow gives you for Claude
+Code:
 
+```bash
+claude mcp add stitch \
+  --transport http \
+  --header "X-Goog-Api-Key: YOUR_KEY" \
+  https://stitch.googleapis.com/mcp
 ```
-cp templates/mcp/designgate.mcp.json .mcp.json
-export STITCH_API_KEY="your-key"      # or: npx @_davideast/stitch-mcp init  (guided OAuth)
-```
 
-Then start Claude Code and confirm `mcp__stitch__*` tools are listed. To use a different
-provider, register its MCP server in `.mcp.json` instead — any server that can generate,
-preview, and export screens works. See **`docs/screen_generation_mcp.md`** for full setup,
-the provider contract, and troubleshooting.
+(Equivalent: copy `templates/mcp/designgate.mcp.json` to `.mcp.json` and set
+`STITCH_API_KEY`.) Then start Claude Code and confirm `mcp__stitch__*` tools are listed.
+
+To use a different provider, register its MCP server in `.mcp.json` instead — any server
+that can generate, preview, and export screens works. Full setup, the provider contract, and
+troubleshooting: **`docs/screen_generation_mcp.md`**.
 
 ## How automatic triggering works
 
@@ -183,19 +188,10 @@ GENERATE a screen from a prompt, PREVIEW the result, and EXPORT it as HTML/code.
 discovers whatever tools the configured server exposes and maps them at runtime, so no tool
 names are hardcoded.
 
-**Default implementation: Google Stitch**
-
-Stitch ships an [official MCP server](https://stitch.withgoogle.com/docs/mcp/setup/) — a
-remote endpoint at `https://stitch.googleapis.com/mcp` plus an official proxy CLI
-(`@_davideast/stitch-mcp`) that runs it locally and handles auth.
-
-1. Copy `templates/mcp/designgate.mcp.json` to `.mcp.json` at your project root (it runs the
-   proxy via `npx @_davideast/stitch-mcp proxy`).
-2. Authenticate: `export STITCH_API_KEY="your-key"`, or run `npx @_davideast/stitch-mcp init`
-   for guided OAuth.
-3. Start Claude Code and confirm `mcp__stitch__*` tools are listed.
-
-Full setup, the tool→capability mapping, the iteration loop, and troubleshooting are in
+**Default: Google Stitch** — its
+[official MCP server](https://stitch.withgoogle.com/docs/mcp/setup/), a remote HTTP endpoint
+at `https://stitch.googleapis.com/mcp`. Configure it in [Installation step 5](#5-configure-a-screen-generation-provider-required-to-generate-screens);
+the tool→capability mapping, the iteration loop, and troubleshooting are in
 **`docs/screen_generation_mcp.md`**.
 
 **Bring your own tool:** register any design MCP server in `.mcp.json` under any name; as
