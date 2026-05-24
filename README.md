@@ -168,10 +168,14 @@ names are hardcoded.
 
 **Default implementation: Google Stitch**
 
-1. Build the Stitch MCP server (e.g. [`oogleyskr/stitch-mcp-server`](https://github.com/oogleyskr/stitch-mcp-server)):
-   `git clone … && npm install && npm run build`.
-2. Copy `templates/mcp/designgate.mcp.json` to `.mcp.json` at your project root and set the
-   absolute path to the built server and your `STITCH_API_KEY`.
+Stitch ships an [official MCP server](https://stitch.withgoogle.com/docs/mcp/setup/) — a
+remote endpoint at `https://stitch.googleapis.com/mcp` plus an official proxy CLI
+(`@_davideast/stitch-mcp`) that runs it locally and handles auth.
+
+1. Copy `templates/mcp/designgate.mcp.json` to `.mcp.json` at your project root (it runs the
+   proxy via `npx @_davideast/stitch-mcp proxy`).
+2. Authenticate: `export STITCH_API_KEY="your-key"`, or run `npx @_davideast/stitch-mcp init`
+   for guided OAuth.
 3. Start Claude Code and confirm `mcp__stitch__*` tools are listed.
 
 Full setup, the tool→capability mapping, the iteration loop, and troubleshooting are in

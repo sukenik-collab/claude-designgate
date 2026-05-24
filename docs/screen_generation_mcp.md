@@ -31,64 +31,59 @@ check for the result before presenting it.
 
 ## Default provider: Google Stitch
 
-Stitch (Google Labs, powered by Gemini) turns a text prompt into UI designs plus HTML/CSS.
-A community MCP server wraps the Stitch API. The reference server used here is
-[`oogleyskr/stitch-mcp-server`](https://github.com/oogleyskr/stitch-mcp-server).
+Stitch (Google, powered by Gemini) turns a text prompt into UI designs plus HTML/CSS. It
+ships an **official MCP server** — a remote HTTP endpoint at `https://stitch.googleapis.com/mcp`
+(authenticated with the `X-Goog-Api-Key` header) — plus an official proxy CLI,
+[`@_davideast/stitch-mcp`](https://github.com/davideast/stitch-mcp), that runs it locally
+over stdio and handles auth for you. Official setup docs:
+<https://stitch.withgoogle.com/docs/mcp/setup/>.
+
+The proxy is the recommended path for Claude Code.
 
 ### How Stitch's tools map to the contract
 
 | Contract capability | Stitch MCP tools |
 |---------------------|------------------|
-| GENERATE | `generate_screen_from_text`, `generate_variants`, `edit_screens` |
-| PREVIEW | `list_screens`, `get_screen`, `get_screen_image` |
-| EXPORT | `get_screen_code` (HTML/CSS), `screen_to_react` (React/TSX), `build_site` |
+| GENERATE | the server's screen-generation tool(s) — e.g. `generate_screen_from_text` |
+| PREVIEW | `get_screen_image` (screenshot as base64), plus the server's list/get-screen tools |
+| EXPORT | `get_screen_code` (screen HTML), `build_site` (full site from screens → routes) |
 
-> Other useful Stitch tools the skill may draw on: `extract_design_context` /
-> `apply_design_context` (carry one screen's design system into the next — keeps a
-> multi-screen project visually consistent), `screen_to_tailwind_config`,
-> `screen_to_css_variables`, `generate_dark_mode`.
+`build_site`, `get_screen_code`, and `get_screen_image` are the documented higher-level
+tools. The proxy also surfaces the upstream Stitch API operations (generation, listing),
+which Claude discovers at runtime — so the exact generation tool name doesn't need to be
+known in advance.
 
 ### Setup
 
-1. **Build the server** (it is distributed as source, not an npm package):
-
-   ```bash
-   git clone https://github.com/oogleyskr/stitch-mcp-server.git
-   cd stitch-mcp-server
-   npm install
-   npm run build      # compiles to dist/index.js
-   ```
-
-2. **Get a key.** The server authenticates with one of:
-   - `STITCH_API_KEY` — a Google API key
-   - `STITCH_ACCESS_TOKEN` — an OAuth2 access token
-   - gcloud CLI auto-detection (fallback)
-
-   Put the key in your shell environment or `.env` (do not commit it).
-
-3. **Register the server with Claude Code.** Copy `templates/mcp/designgate.mcp.json` to
-   `.mcp.json` at your project root and set the absolute path to the built server:
+1. **Register the server with Claude Code.** Copy `templates/mcp/designgate.mcp.json` to
+   `.mcp.json` at your project root:
 
    ```json
    {
      "mcpServers": {
        "stitch": {
-         "command": "node",
-         "args": ["/absolute/path/to/stitch-mcp-server/dist/index.js"],
-         "env": { "STITCH_API_KEY": "${STITCH_API_KEY}" }
+         "command": "npx",
+         "args": ["@_davideast/stitch-mcp", "proxy"]
        }
      }
    }
    ```
 
-   Equivalent one-liner:
+2. **Authenticate** with one of:
+   - **API key (simplest):** `export STITCH_API_KEY="your-key"` in the environment Claude
+     Code runs in.
+   - **OAuth (guided):** `npx @_davideast/stitch-mcp init` — runs a wizard that handles
+     gcloud, OAuth, credentials, and project setup.
+   - **System gcloud:** `gcloud auth application-default login` then
+     `gcloud config set project <PROJECT_ID>`, and add `"env": { "STITCH_USE_SYSTEM_GCLOUD": "1" }`
+     to the config block above.
 
-   ```bash
-   claude mcp add stitch -- node /absolute/path/to/stitch-mcp-server/dist/index.js
-   ```
+3. **Confirm.** Start Claude Code and check that `mcp__stitch__*` tools are listed. The
+   skill discovers and uses them automatically.
 
-4. **Confirm.** Start Claude Code and check that `mcp__stitch__*` tools are listed. The
-   skill will discover and use them automatically.
+> **Remote (no local proxy):** if your client supports remote MCP servers, point it at
+> `https://stitch.googleapis.com/mcp` with header `X-Goog-Api-Key: <your-key>` instead of
+> running the proxy CLI.
 
 ---
 
@@ -113,8 +108,8 @@ This is the human-UX-designer loop the skill is built around:
 2. Claude retrieves the result via a PREVIEW tool and presents the reference(s) to you.
 3. You react — "tighten the spacing", "the empty state is wrong", "variant B but with the
    primary CTA on the right".
-4. Claude folds your feedback into a revised prompt and calls GENERATE again (using
-   `edit_screens` / `generate_variants` where the server supports targeted edits).
+4. Claude folds your feedback into a revised prompt and calls GENERATE again (using the
+   server's edit/variant tool where it supports targeted edits).
 5. Repeat until you approve a specific screen (Step 5 — the mandatory approval gate).
 6. On approval, Claude calls an EXPORT tool and implements from that output only (Step 6).
 
@@ -124,14 +119,15 @@ Claude holds the screen references in the conversation; there is no manifest fil
 
 ## Troubleshooting
 
-- **`mcp__stitch__*` tools don't appear:** the server failed to start. Check the absolute
-  path in `args`, that `npm run build` produced `dist/index.js`, and that `node` is on PATH.
+- **`mcp__stitch__*` tools don't appear:** the proxy failed to start. Check that `npx` can
+  reach `@_davideast/stitch-mcp` (network/registry access), and that authentication succeeded
+  (`STITCH_API_KEY` set, or `init` completed).
 - **Auth errors on GENERATE:** the key is missing or lacks Stitch access. Verify
   `STITCH_API_KEY` is exported in the environment Claude Code runs in.
 - **GENERATE returns a job/ID but no image:** the server is async — Claude should poll a
-  PREVIEW tool (`get_screen` / `get_screen_image`) until the screen is ready.
-- **Designs drift between screens:** use `extract_design_context` on an approved screen and
-  `apply_design_context` on the next so the design system carries forward.
+  PREVIEW tool (`get_screen_image`) until the screen is ready.
+- **Designs drift between screens:** use Stitch's design-context extract/apply tools — pull
+  context from an approved screen and apply it to the next so the design system carries forward.
 
 ---
 

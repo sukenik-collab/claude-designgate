@@ -312,12 +312,12 @@ Setup and the full provider contract are in `docs/screen_generation_mcp.md`.
 **Find the tools.** The configured server's tools appear as `mcp__<server>__<tool>`. Do not
 rely on hardcoded names — map the available tools to three capabilities:
 
-- **GENERATE** — turns this prompt into screens. *(Stitch: `generate_screen_from_text`,
-  `generate_variants`, `edit_screens`.)*
-- **PREVIEW** — returns a viewable reference (URL / image / screen ID) for review.
-  *(Stitch: `list_screens`, `get_screen`, `get_screen_image`.)*
+- **GENERATE** — turns this prompt into screens. *(Stitch: its screen-generation tool,
+  e.g. `generate_screen_from_text`.)*
+- **PREVIEW** — returns a viewable reference (image / screen ID) for review.
+  *(Stitch: `get_screen_image`, plus list/get-screen tools.)*
 - **EXPORT** — returns the approved screen as HTML/CSS or component code.
-  *(Stitch: `get_screen_code`, `screen_to_react`, `build_site`.)*
+  *(Stitch: `get_screen_code`, `build_site`.)*
 
 If no `mcp__*` design tools are available, stop and tell the user the design MCP server
 isn't configured, pointing them to `docs/screen_generation_mcp.md`. (A deprecated offline
@@ -329,12 +329,12 @@ fallback exists at `templates/stitch/generate.js` for environments that can't ru
 2. If the server is async (returns a job/ID rather than a finished screen), call a PREVIEW
    tool until the screen is ready.
 3. Present the preview reference(s) to the user and invite feedback.
-4. Fold their feedback into a revised prompt and call GENERATE again (prefer `edit_screens`
-   / `generate_variants` for targeted changes when supported). Repeat until they approve.
+4. Fold their feedback into a revised prompt and call GENERATE again (use the server's
+   edit/variant tool for targeted changes when one exists). Repeat until they approve.
 
 For a multi-screen project, carry the design system forward between screens where the server
-supports it (Stitch: `extract_design_context` on an approved screen → `apply_design_context`
-on the next) so screens stay visually consistent.
+supports it (Stitch exposes design-context extract/apply tools) so screens stay visually
+consistent.
 
 Hold screen references in the conversation. There is no manifest file to maintain.
 
@@ -360,7 +360,7 @@ Confirm approval:
 > "Design locked: [screen reference]. Implementing from this screen only."
 
 Pull the approved screen with an EXPORT tool (Stitch: `get_screen_code` for HTML/CSS, or
-`screen_to_react`). Convert to the project's component format (React + Tailwind, or as
+`build_site`). Convert to the project's component format (React + Tailwind, or as
 configured) and build from that output.
 
 The approved screen is the design contract. Do not redesign during implementation.
