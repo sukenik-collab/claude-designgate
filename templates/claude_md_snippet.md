@@ -1,41 +1,23 @@
-# DesignGate — CLAUDE.md Snippet
+# DesignGate — CLAUDE.md Snippet (optional)
 
-Copy this section into your project's `CLAUDE.md` to enforce the DesignGate workflow
-automatically. Claude reads this at session start and applies it for any UI-heavy task
-without requiring explicit invocation.
+**You do not need this snippet for DesignGate to work.** The skill auto-activates from its
+`description` as soon as it's installed in `.claude/skills/designgate/`. Add this snippet
+only if you want a hard, always-on backstop pinned in context — a guarantee the mandatory
+gate is honored even if auto-invoke ever misses. The full workflow lives in the skill, so
+this is intentionally short.
 
 ---
 
 ## UI Design Workflow — Mandatory for UI-Heavy Stages
 
-Before building any feature with significant frontend UI:
+Before building any feature with significant frontend UI, the **DesignGate** skill is
+mandatory. **Do not build UI directly from the spec.** DesignGate auto-activates on UI-heavy
+work; if it doesn't, invoke `/designgate`. It enforces: brand-brief check → batched
+interaction questions (max 5) → screen generation via the configured design MCP → a human
+approval gate before any implementation. The approved screen is the contract.
 
-1. Check that a brand brief exists at `docs/brand_brief.md`. If it doesn't, run the
-   Brand Brief Formation workflow before proceeding.
-2. Read `docs/ux_decisions.md` if it exists. Apply already-decided items silently.
-   For adjacent decisions, surface the prior choice when asking.
-3. Read the relevant spec section and surface every interaction question the spec
-   doesn't answer and the brand brief doesn't resolve. Present these as a batched
-   list (maximum 5 questions). Wait for answers.
-4. Write resolved decisions to `docs/ux_decisions.md`.
-5. Use the answers + brand brief to generate a complete visual generation prompt.
-6. Generate screens by calling the configured design MCP server's tools (Google Stitch by
-   default — see `docs/screen_generation_mcp.md`). Iterate on the user's feedback, then stop
-   and wait for explicit approval before building anything.
-7. Build from the approved screen only — export it from the design server and implement that
-   output. The approved design is the contract.
+Skip only when every interaction maps to an already-decided pattern in `docs/ux_decisions.md`
+or the brand brief, or when the task has no frontend component. For brownfield redesigns,
+provide a filled `templates/screen_context_bundle.md` first.
 
-**Do not build UI directly from the spec.** This workflow is mandatory for any screen
-where the spec leaves interaction decisions open (layout, panel vs page, empty states,
-modal vs inline, mobile vs desktop CTA differences).
-
-Skip only when every interaction on the screen maps to an already-decided pattern
-in `docs/ux_decisions.md` or the brand brief, or when the task has no frontend
-component at all.
-
-**Brownfield redesigns (rebuilding an existing screen):** Fill out
-`templates/screen_context_bundle.md` and provide it before Step 3. Declare what user
-capabilities the current screen supports — DesignGate treats your declaration as
-authoritative and reconciles it against the spec (Step 1.5). Code files are an optional
-diagnostic lens only; they cannot introduce capabilities not declared in the bundle.
-UX patterns and interaction logic from existing code are never carried forward.
+See `.claude/skills/designgate/SKILL.md` for the full workflow.

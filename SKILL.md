@@ -1,12 +1,15 @@
 ---
 name: designgate
 description: >
-  Human-in-the-loop UI design checkpoint. Activates automatically when the CLAUDE.md
-  snippet is installed; use /designgate explicitly otherwise. Checks that a brand brief
-  exists, reads prior UX decisions to avoid re-asking resolved questions, surfaces only
-  genuinely unresolved interaction decisions (batched, max 5), generates a complete
-  screen generation prompt for visual generation, and enforces a mandatory human approval
-  gate before any implementation begins. The approved screen is the design contract.
+  Mandatory human-in-the-loop UI design checkpoint. Use automatically — before writing
+  any UI code — whenever the task involves building, creating, adding, or redesigning a
+  user-facing screen, page, flow, component, interface, or frontend, unless every
+  interaction maps to an already-decided pattern. Verifies a brand brief exists, reads
+  prior UX decisions to avoid re-asking resolved questions, surfaces only genuinely
+  unresolved interaction decisions (batched, max 5), generates a complete screen-generation
+  prompt for the configured design MCP, and enforces a hard human approval gate before
+  implementation. The approved screen is the design contract. Also invokable explicitly
+  via /designgate.
 ---
 
 # DesignGate — Instructions
@@ -21,12 +24,17 @@ before any UI implementation begins.
 
 ## Activation
 
-### Automatic (requires setup)
+### Automatic (no setup required)
 
-DesignGate is designed to activate automatically when the CLAUDE.md snippet is
-installed (see README and `templates/claude_md_snippet.md`). Claude reads it at
-session start and applies the workflow for any UI-heavy task. Without the snippet,
-DesignGate will not activate automatically — use `/designgate` explicitly.
+DesignGate auto-activates from this skill's `description`: Claude invokes it when a task
+matches the trigger conditions (building, creating, adding, or redesigning any user-facing
+screen/page/flow/component/UI), before any UI is built. **No CLAUDE.md snippet is required**
+— the skill description is the trigger.
+
+The CLAUDE.md snippet (`templates/claude_md_snippet.md`) is now **optional reinforcement**:
+add it only if you want a hard, always-on backstop pinned in context for the mandatory gate
+(e.g. a team that cannot tolerate a missed auto-invoke). It is no longer the primary
+mechanism, and the skill activates without it.
 
 ### Explicit invocation
 
