@@ -11,7 +11,7 @@ checkpoint: no UI gets built until a human has seen it, reacted to it, and appro
 ## What it does
 
 1. When Claude encounters a UI-heavy task, DesignGate activates automatically
-   (requires CLAUDE.md snippet — see Installation)
+   from its skill description — no CLAUDE.md snippet required
 2. It checks whether a brand brief exists and is sufficient
 3. It reads the spec section, checks prior UX decisions, and surfaces only the
    interaction questions that are genuinely unresolved — batched, capped at five
@@ -38,11 +38,12 @@ mkdir -p .claude/skills/designgate
 cp SKILL.md .claude/skills/designgate/SKILL.md
 ```
 
-### 2. Add the CLAUDE.md snippet (required for automatic triggering)
+### 2. Add the CLAUDE.md snippet (optional reinforcement)
 
-Copy the contents of `templates/claude_md_snippet.md` into your project's `CLAUDE.md`.
-This is what causes Claude to apply the DesignGate workflow automatically. Without this
-step, DesignGate will not activate on its own — you must invoke `/designgate` manually.
+Automatic triggering does **not** require this step — the skill auto-activates from its
+`description` (see "How automatic triggering works"). Add the snippet only if you want a
+hard, always-on backstop pinned in `CLAUDE.md` for the mandatory gate. If you do, copy the
+contents of `templates/claude_md_snippet.md` into your project's `CLAUDE.md`.
 
 ### 3. Initialize the UX decisions log (optional)
 
@@ -86,10 +87,15 @@ troubleshooting: **`docs/screen_generation_mcp.md`**.
 
 ## How automatic triggering works
 
-DesignGate is designed to activate automatically when the CLAUDE.md snippet is
-installed. Claude reads it at session start and applies the workflow when it encounters
-UI work. Without the snippet, automatic triggering does not occur — use `/designgate`
-explicitly. The snippet is the enforcement mechanism, not the skill file alone.
+DesignGate auto-activates from its skill `description`: Claude invokes the skill when a
+task matches the trigger conditions encoded there (building, creating, adding, or
+redesigning any user-facing screen/page/flow/component/UI), before any UI is built. This
+works with the skill installed alone — **no CLAUDE.md snippet required.** You can still
+invoke `/designgate` explicitly at any time.
+
+The optional CLAUDE.md snippet (`templates/claude_md_snippet.md`) adds a hard, always-on
+backstop in context for teams that want the mandatory gate pinned regardless of auto-invoke.
+It is no longer the primary mechanism — the skill description is.
 
 Common trigger phrases (also recognized when invoking the skill directly):
 - "build the [screen/page/flow]"
